@@ -1,0 +1,3 @@
+[D-BUS Service]
+Name=dev.louiscouture.path
+Exec=@bindir@/paths3 --gapplication-service

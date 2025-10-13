@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="paths3">
+	<schema id="dev.louiscouture.path" path="/dev/louiscouture/path/">
+	</schema>
+</schemalist>

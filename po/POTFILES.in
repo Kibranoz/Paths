@@ -1,0 +1,8 @@
+# List of source files containing translatable strings.
+# Please keep this file sorted alphabetically.
+data/dev.louiscouture.path.desktop.in
+data/dev.louiscouture.path.metainfo.xml.in
+data/dev.louiscouture.path.gschema.xml
+src/main.c
+src/paths3-window.c
+src/paths3-window.ui
