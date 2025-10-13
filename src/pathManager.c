@@ -3,9 +3,27 @@ static GArray *
 GetPaths (void)
 {
   FILE *fptr;
+  FILE *folderPointer;
   const char *home = g_get_home_dir ();
   char *path = g_strdup_printf ("%s/.bashrc.d/dev-louiscouture-path.sh", home);
   fptr = fopen (path, "r");
+  if (fptr == NULL)
+    {
+      printf ("Err no such file");
+      char *folder = g_strdup_printf ("%s/.bashrc.d", home);
+      folderPointer = fopen (folder, "r");
+      if (folderPointer == NULL)
+        {
+          GError **error = NULL;
+          GFile *gfile = g_file_new_for_path (folder);
+          g_file_make_directory (gfile, NULL, error);
+        }
+      GError **errorFile = NULL;
+      GFile *file = g_file_new_for_path (path);
+      g_file_create (file, G_FILE_CREATE_NONE, NULL, errorFile);
+      fptr = fopen (path, "r");
+      fflush (stdout);
+    }
   g_free (path);
   GString *fileContent;
   fileContent = g_string_new (NULL);
