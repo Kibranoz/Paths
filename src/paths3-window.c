@@ -44,5 +44,7 @@ paths3_window_class_init (Paths3WindowClass *klass)
 static void
 paths3_window_init (Paths3Window *self)
 {
+      GtkIconTheme *theme = gtk_icon_theme_get_for_display(gdk_display_get_default());
+
 	gtk_widget_init_template (GTK_WIDGET (self));
 }

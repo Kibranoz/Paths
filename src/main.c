@@ -21,7 +21,6 @@
 #include "config.h"
 
 #include <glib/gi18n.h>
-#include "AppState.h"
 
 #include "paths3-application.h"
 

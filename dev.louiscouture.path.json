@@ -1,7 +1,7 @@
 {
     "id" : "dev.louiscouture.path",
     "runtime" : "org.gnome.Platform",
-    "runtime-version" : "master",
+    "runtime-version" : "48",
     "sdk" : "org.gnome.Sdk",
     "command" : "paths3",
     "finish-args" : [
@@ -9,7 +9,8 @@
         "--share=ipc",
         "--socket=fallback-x11",
         "--device=dri",
-        "--socket=wayland"
+        "--socket=wayland",
+        "--filesystem=home"
     ],
     "cleanup" : [
         "/include",
@@ -24,7 +25,7 @@
     ],
     "modules" : [
         {
-            "name" : "paths3",
+            "name" : "paths",
             "builddir" : true,
             "buildsystem" : "meson",
             "sources" : [

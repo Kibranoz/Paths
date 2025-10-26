@@ -24,33 +24,22 @@
 #include "paths3-application.h"
 #include "paths3-window.h"
 
+#include "paths_app_section.c"
+
 #include <stdlib.h>
 
-#include "AppState.c"
-#include "pathManager.c"
 
 struct _Paths3Application
 {
   AdwApplication parent_instance;
 };
 
-struct PathEntry
-{
-  AppState *appState;
-  GtkWidget *parentElement;
-  int id;
-};
-
-struct ExistingPathEntries
-{
-  GArray *paths;
-  GtkWidget *parentElement;
-};
-
-struct DeletePathInfos
-{
-  GtkWidget *elementToDelete;
-  GtkWidget *parentElement;
+struct MenuElements {
+  GtkToggleButton * pathsButton;
+  GtkToggleButton* aliasButton;
+  GtkStack* stack;
+  GtkBox * alias_box;
+  GtkBox* path_box;
 };
 
 G_DEFINE_FINAL_TYPE (Paths3Application, paths3_application, ADW_TYPE_APPLICATION)
@@ -67,81 +56,16 @@ paths3_application_new (const char *application_id,
                        "resource-base-path", "/dev/louiscouture/path",
                        NULL);
 }
-static void
-apply_path_changes (GtkButton *button, GtkWidget *parentWidget)
+
+static void toggle_button_management(GtkToggleButton* selectedButton, struct MenuElements * elements)
 {
-  GArray *paths = g_array_new (FALSE, FALSE, sizeof (gpointer));
-  GtkWidget *pathBox = gtk_widget_get_first_child (parentWidget);
-  while (pathBox != NULL)
-    {
-      GtkWidget *entry_box = gtk_widget_get_first_child (pathBox);
-
-      GtkEntryBuffer *buffer = gtk_entry_get_buffer (GTK_ENTRY (entry_box));
-      const gchar *pathText = gtk_entry_buffer_get_text (buffer);
-      g_array_append_val (paths, pathText);
-      pathBox = gtk_widget_get_next_sibling (pathBox);
-      printf ("%s\n", pathText);
-  fflush (stdout);
-
-    }
-  InsertPaths (paths);
-}
-static void
-delete_path (GtkButton *button, struct DeletePathInfos *deletePathInfos)
-{
-  gtk_box_remove (GTK_BOX (deletePathInfos->parentElement), deletePathInfos->elementToDelete);
-  // to do : check if we need to keep id.
-}
-
-GtkWidget *
-generate_new_pathBox (GtkWidget *parentElement)
-{
-  GtkWidget *pathBox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 6);
-  GtkWidget *path = gtk_entry_new ();
-  gtk_widget_set_hexpand (path, TRUE);
-  gtk_entry_set_placeholder_text (GTK_ENTRY (path), "path/to/binary");
-
-  GtkWidget *deleteButton = gtk_button_new_from_icon_name ("user-trash-symbolic");
-
-  gtk_box_append (GTK_BOX (pathBox), path);
-  gtk_box_append (GTK_BOX (pathBox), deleteButton);
-
-  gtk_widget_set_margin_start (pathBox, 10);
-  gtk_widget_set_margin_top (pathBox, 10);
-  gtk_widget_set_margin_end (pathBox, 10);
-
-  gtk_box_append (GTK_BOX (parentElement), pathBox);
-
-  struct DeletePathInfos *infosToDelete = g_malloc0 (sizeof (struct DeletePathInfos));
-  infosToDelete->parentElement = parentElement;
-  infosToDelete->elementToDelete = pathBox;
-
-  g_signal_connect (deleteButton, "clicked", G_CALLBACK (delete_path), infosToDelete);
-  return pathBox;
-}
-static void
-add_new_path (GtkButton *button, struct PathEntry *pathEntry)
-{
-  generate_new_pathBox (pathEntry->parentElement);
-}
-static void
-add_existing_paths (struct ExistingPathEntries *existingPathEntries)
-{
-  if (existingPathEntries->paths->len > 0){
-  GtkWidget *parentElement = existingPathEntries->parentElement;
-  for (guint i = 0; i < existingPathEntries->paths->len; i++)
-    {
-      gchar *text = g_array_index (existingPathEntries->paths, gchar *, i);
-      if (strcmp(text, "") != 0) {
-      GtkWidget *pathBox = generate_new_pathBox (parentElement);
-      GtkWidget *entry_box = gtk_widget_get_first_child (pathBox);
-      GtkEntryBuffer *buffer = gtk_entry_get_buffer (GTK_ENTRY (entry_box));
-      printf ("%s\n", text);
-      fflush (stdout);
-      gssize len = (gssize) strlen (text);
-      gtk_entry_buffer_set_text (buffer, text, len);
-      }
-    }
+  if (gtk_toggle_button_get_active(elements->aliasButton) && selectedButton == elements->aliasButton) {
+    gtk_toggle_button_set_active (elements->pathsButton, false);
+    gtk_stack_set_visible_child (elements->stack, GTK_WIDGET (elements->alias_box));
+  }
+  if (gtk_toggle_button_get_active(elements->pathsButton) && selectedButton == elements->pathsButton)   {
+    gtk_toggle_button_set_active (elements->aliasButton, false);
+    gtk_stack_set_visible_child (elements->stack, GTK_WIDGET (elements->path_box));
   }
 }
 static void
@@ -168,45 +92,31 @@ paths3_application_activate (GApplication *app)
     }
 
   GtkBuilder *builder = gtk_builder_new_from_resource ("/dev/louiscouture/path/paths3-window.ui");
-  if (!builder)
+
+    if (!builder)
     {
       g_printerr ("Failed to load UI resource\n");
       return;
     }
-  GtkWidget *elem_boxes = GTK_WIDGET (gtk_builder_get_object (builder, "elem_boxes"));
 
-  if (!elem_boxes)
-    {
-      g_printerr ("main_box not found in UI — check id (main_box vs main-box) and recompile resources\n");
-      return;
-    }
-  GtkWidget *newPathButton = GTK_WIDGET (gtk_builder_get_object (builder, "add_new_path"));
 
-  GtkWidget *applyPathButton = GTK_WIDGET (gtk_builder_get_object (builder, "update_paths"));
+  GtkStack *stack = GTK_STACK(gtk_builder_get_object (builder, "main_stack"));
+  GtkToggleButton * pathsButton = GTK_TOGGLE_BUTTON (gtk_builder_get_object(builder, "path_select_button"));
+  GtkToggleButton * aliasButton = GTK_TOGGLE_BUTTON (gtk_builder_get_object(builder, "alias_select_button"));
+  GtkBox * aliasBox = GTK_BOX (gtk_builder_get_object(builder, "main_box_aliases"));
+  GtkBox * pathBox = GTK_BOX (gtk_builder_get_object(builder, "main-box"));
 
-  //--------------Add existing elements -------------------------------------
+  struct MenuElements * menuElements = g_malloc0 (sizeof(struct MenuElements));
+  menuElements->stack = stack;
+  menuElements->pathsButton = pathsButton;
+  menuElements->aliasButton = aliasButton;
+  menuElements->path_box = pathBox;
+  menuElements->alias_box = aliasBox;
 
-  GArray *items = GetPaths ();
+  g_signal_connect (pathsButton, "toggled", G_CALLBACK (toggle_button_management), menuElements);
+  g_signal_connect (aliasButton, "toggled", G_CALLBACK (toggle_button_management), menuElements);
 
-  struct ExistingPathEntries *existingPathEntries = g_malloc0 (sizeof (struct ExistingPathEntries));
-
-  existingPathEntries->parentElement = elem_boxes;
-  existingPathEntries->paths = items;
-  add_existing_paths (existingPathEntries);
-
-  // ---------create new path entry and connect it to add new path button-------
-
-  AppState *appState = g_malloc0 (sizeof (AppState));
-  appState->elementCount = 0;
-  appState->activeElements = g_array_new (FALSE, FALSE, sizeof (int));
-
-  struct PathEntry *pathEntry = g_malloc0 (sizeof (struct PathEntry));
-  pathEntry->appState = appState;
-  pathEntry->parentElement = elem_boxes;
-  pathEntry->id = pathEntry->appState->elementCount;
-
-  g_signal_connect (newPathButton, "clicked", G_CALLBACK (add_new_path), pathEntry);
-  g_signal_connect (applyPathButton, "clicked", G_CALLBACK (apply_path_changes), elem_boxes);
+  show_paths_app_section (builder);
 
   //---------------- Present app window ------------------------------------
   GtkWidget *window_ui = GTK_WIDGET (gtk_builder_get_object (builder, "Paths3Window"));
@@ -276,4 +186,3 @@ paths3_application_init (Paths3Application *self)
                                          "app.quit",
                                          (const char *[]) { "<primary>q", NULL });
 }
-

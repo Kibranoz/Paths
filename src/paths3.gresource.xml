@@ -4,4 +4,10 @@
     <file preprocess="xml-stripblanks">paths3-window.ui</file>
     <file preprocess="xml-stripblanks">gtk/help-overlay.ui</file>
   </gresource>
+
+    <gresource prefix="/dev/louiscouture/path/icons/16x16/actions/">
+              <file alias="draw-line-symbolic.svg">gtk/icons/draw-line-symbolic.svg</file>
+                    <file alias="chain-link-symbolic.svg">gtk/icons/chain-link-symbolic.svg</file>
+    </gresource>
+
 </gresources>

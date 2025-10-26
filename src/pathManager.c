@@ -1,7 +1,99 @@
 #include <glib/gi18n.h>
+
+static GString *
+readFile (char *relPath)
+{
+  const char *home = g_get_home_dir ();
+  char *path = g_strdup_printf ("%s/%s", home, relPath);
+
+  GFile *file = g_file_new_for_path (path);
+
+  GError **inputStreamError = NULL;
+  GError **fileInfoError = NULL;
+  GFileInputStream *fileInputStream = g_file_read (file, NULL, inputStreamError);
+
+  GFileInfo *fileInfo = g_file_query_info (file, G_FILE_ATTRIBUTE_STANDARD_SIZE, G_FILE_QUERY_INFO_NONE, NULL, fileInfoError);
+
+  guint64 fileSize = g_file_info_get_attribute_uint64 (fileInfo, G_FILE_ATTRIBUTE_STANDARD_SIZE);
+
+  guint8 buffer[fileSize];
+  gsize count = fileSize;
+  gsize *bytes_read;
+  GError **readFileError = NULL;
+
+  GString *file_content = g_string_new (NULL);
+
+  gsize read = g_input_stream_read (G_INPUT_STREAM (fileInputStream), buffer, count, NULL, readFileError);
+  if (read > 0)
+    {
+      g_string_append (file_content, buffer);
+    }
+  if (read == -1)
+    {
+      printf ("%s", (*readFileError)->message);
+    }
+
+  GError **closeInputStream = NULL;
+
+  g_input_stream_close (G_INPUT_STREAM (fileInputStream), NULL, closeInputStream);
+  return file_content;
+}
+
+static void
+checkBashRc (void)
+{
+  GString *bashRCContent = readFile (".bashrc");
+  char *checkCodes[8];
+  checkCodes[0] = "if [ -d ~/.bashrc.d ]; then";
+  checkCodes[1] = "for rc in ~/.bashrc.d/*; do";
+  checkCodes[2] = "if [ -f \"$rc\" ]; then";
+  checkCodes[3] = ". \"$rc\"";
+  checkCodes[4] = "fi";
+  checkCodes[5] = "done";
+  checkCodes[6] = "fi";
+  checkCodes[7] = "unset rc";
+  bool containsCode = true;
+  for (int i = 0; i < 8; i++)
+    {
+      bool containsLine = strstr (bashRCContent->str, checkCodes[i]);
+      if (!containsLine)
+        {
+          containsCode = false;
+        }
+    }
+  if (containsCode)
+    {
+      printf ("Contains the code");
+    }
+  else
+    {
+      const char *home = g_get_home_dir ();
+      char *path = g_strdup_printf ("%s/.bashrc", home);
+      GFile *file = g_file_new_for_path (path);
+      GError **fileOpenError = NULL;
+      GFileOutputStream *ostream = g_file_append_to (file, G_FILE_CREATE_NONE, NULL, fileOpenError);
+
+      gchar *toWrite = "if [ -d ~/.bashrc.d ]; then\n"
+                      "    for rc in ~/.bashrc.d/*; do\n"
+                      "        if [ -f \"$rc\" ]; then\n"
+                      "            . \"$rc\"\n"
+                      "        fi\n"
+                      "    done\n"
+                      "fi\n"
+                      "unset rc\n";
+      GError ** writeError = NULL;
+      g_output_stream_write (G_OUTPUT_STREAM(ostream), toWrite, strlen(toWrite), NULL, writeError);
+      GError ** closeError = NULL;
+
+      g_output_stream_close (G_OUTPUT_STREAM (ostream), NULL, closeError);
+
+    }
+}
+
 static GArray *
 GetPaths (void)
 {
+  checkBashRc ();
   FILE *fptr;
   FILE *folderPointer;
   const char *home = g_get_home_dir ();
@@ -25,18 +117,8 @@ GetPaths (void)
       fflush (stdout);
     }
   g_free (path);
-  GString *fileContent;
-  fileContent = g_string_new (NULL);
-  int c;
-  c = fgetc (fptr);
-
-  while (c != EOF)
-    {
-      g_string_append_c (fileContent, c);
-      c = fgetc (fptr);
-    }
+  GString *fileContent = readFile ("/.bashrc.d/dev-louiscouture-path.sh");
   printf ("%s", fileContent->str);
-  printf ("%d", (int) strlen (fileContent->str));
 
   GArray *paths = g_array_new (FALSE, FALSE, sizeof (gpointer));
 
