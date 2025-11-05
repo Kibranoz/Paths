@@ -29,6 +29,7 @@ apply_path_changes (GtkButton *button, GtkWidget *parentWidget)
       fflush (stdout);
     }
   InsertPaths (paths);
+  g_array_free (paths, TRUE);
 }
 static void
 delete_path (GtkButton *button, struct DeletePathInfos *deletePathInfos)
@@ -89,6 +90,7 @@ add_existing_paths (struct ExistingPathEntries *existingPathEntries)
             }
         }
     }
+  g_array_free(existingPathEntries->paths, TRUE);
   g_free (existingPathEntries);
 }
 
@@ -97,7 +99,7 @@ static void show_paths_app_section(GtkBuilder * builder) {
 
   if (!elem_boxes)
     {
-      g_printerr ("main_box not found in UI — check id (main_box vs main-box) and recompile resources\n");
+      g_printerr ("Missing element with id : elem_boxes_paths");
       return;
     }
   GtkWidget *newPathButton = GTK_WIDGET (gtk_builder_get_object (builder, "add_new_path"));
@@ -108,7 +110,7 @@ static void show_paths_app_section(GtkBuilder * builder) {
 
   GArray *items = GetPaths ();
 
-  struct ExistingPathEntries *existingPathEntries = g_malloc0 (sizeof (struct ExistingPathEntries));
+  struct ExistingPathEntries *existingPathEntries = g_malloc0 (sizeof (struct ExistingPathEntries)); //TODO : check why we need to use m_alloc here and not with aliases
 
   existingPathEntries->parentElement = elem_boxes;
   existingPathEntries->paths = items;

@@ -25,6 +25,7 @@
 #include "paths3-window.h"
 
 #include "paths_app_section.c"
+#include "alias_app_section.c"
 
 #include <stdlib.h>
 
@@ -117,6 +118,7 @@ paths3_application_activate (GApplication *app)
   g_signal_connect (aliasButton, "toggled", G_CALLBACK (toggle_button_management), menuElements);
 
   show_paths_app_section (builder);
+  show_alias_app_section (builder);
 
   //---------------- Present app window ------------------------------------
   GtkWidget *window_ui = GTK_WIDGET (gtk_builder_get_object (builder, "Paths3Window"));

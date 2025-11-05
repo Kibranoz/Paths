@@ -1,44 +1,5 @@
 #include <glib/gi18n.h>
-
-static GString *
-readFile (char *relPath)
-{
-  const char *home = g_get_home_dir ();
-  char *path = g_strdup_printf ("%s/%s", home, relPath);
-
-  GFile *file = g_file_new_for_path (path);
-
-  GError **inputStreamError = NULL;
-  GError **fileInfoError = NULL;
-  GFileInputStream *fileInputStream = g_file_read (file, NULL, inputStreamError);
-
-  GFileInfo *fileInfo = g_file_query_info (file, G_FILE_ATTRIBUTE_STANDARD_SIZE, G_FILE_QUERY_INFO_NONE, NULL, fileInfoError);
-
-  guint64 fileSize = g_file_info_get_attribute_uint64 (fileInfo, G_FILE_ATTRIBUTE_STANDARD_SIZE);
-
-  guint8 buffer[fileSize];
-  gsize count = fileSize;
-  gsize *bytes_read;
-  GError **readFileError = NULL;
-
-  GString *file_content = g_string_new (NULL);
-
-  gsize read = g_input_stream_read (G_INPUT_STREAM (fileInputStream), buffer, count, NULL, readFileError);
-  if (read > 0)
-    {
-      g_string_append (file_content, buffer);
-    }
-  if (read == -1)
-    {
-      printf ("%s", (*readFileError)->message);
-    }
-
-  GError **closeInputStream = NULL;
-
-  g_input_stream_close (G_INPUT_STREAM (fileInputStream), NULL, closeInputStream);
-  return file_content;
-}
-
+#include "fileManagement.c"
 static void
 checkBashRc (void)
 {
@@ -86,8 +47,13 @@ checkBashRc (void)
       GError ** closeError = NULL;
 
       g_output_stream_close (G_OUTPUT_STREAM (ostream), NULL, closeError);
+      g_free(path);
+      g_object_unref (file);
+      g_object_unref (ostream);
+      //TO DO : test this in a virtual machine
 
     }
+  g_string_free (bashRCContent, TRUE);
 }
 
 static GArray *
@@ -109,13 +75,17 @@ GetPaths (void)
           GError **error = NULL;
           GFile *gfile = g_file_new_for_path (folder);
           g_file_make_directory (gfile, NULL, error);
+        } else {
+          fclose(folderPointer);
         }
       GError **errorFile = NULL;
       GFile *file = g_file_new_for_path (path);
       g_file_create (file, G_FILE_CREATE_NONE, NULL, errorFile);
-      fptr = fopen (path, "r");
       fflush (stdout);
+    } else {
+      fclose(fptr);
     }
+
   g_free (path);
   GString *fileContent = readFile ("/.bashrc.d/dev-louiscouture-path.sh");
   printf ("%s", fileContent->str);
@@ -135,6 +105,7 @@ GetPaths (void)
           g_array_append_val (paths, split4[i]);
         }
     }
+  g_string_free (fileContent, TRUE);
 
   return paths;
 }
@@ -142,7 +113,6 @@ GetPaths (void)
 static void
 InsertPaths (GArray *paths)
 {
-  FILE *fptr;
   const char *home = g_get_home_dir ();
   char *pathPath = g_strdup_printf ("%s/.bashrc.d/dev-louiscouture-path.sh", home);
 

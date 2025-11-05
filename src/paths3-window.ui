@@ -118,7 +118,7 @@
                     </object>
                   </child>
                   <child>
-                    <object class="GtkButton" id="update_alias">
+                    <object class="GtkButton" id="update_aliases">
                       <property name="label"> Apply </property>
                     </object>
                   </child>
