@@ -52,8 +52,6 @@ GetAliases(void) {
   g_free (path);
   GString *fileContent = readFile ("/.bashrc.d/dev-louiscouture-path-alias.sh");
 
-    printf ("%s", fileContent->str);
-
     GArray *aliasNames = g_array_new (FALSE, FALSE, sizeof (gpointer));
     GArray *aliases = g_array_new (FALSE, FALSE, sizeof (gpointer));
 

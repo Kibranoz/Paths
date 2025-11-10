@@ -24,8 +24,8 @@
 #include "paths3-application.h"
 #include "paths3-window.h"
 
-#include "paths_app_section.c"
-#include "alias_app_section.c"
+#include "./paths/paths_app_section.c"
+#include "./alias/alias_app_section.c"
 
 #include <stdlib.h>
 

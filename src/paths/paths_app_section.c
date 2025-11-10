@@ -25,8 +25,6 @@ apply_path_changes (GtkButton *button, GtkWidget *parentWidget)
       const gchar *pathText = gtk_entry_buffer_get_text (buffer);
       g_array_append_val (paths, pathText);
       pathBox = gtk_widget_get_next_sibling (pathBox);
-      printf ("%s\n", pathText);
-      fflush (stdout);
     }
   InsertPaths (paths);
   g_array_free (paths, TRUE);
@@ -83,8 +81,6 @@ add_existing_paths (struct ExistingPathEntries *existingPathEntries)
               GtkWidget *pathBox = generate_new_pathBox (parentElement);
               GtkWidget *entry_box = gtk_widget_get_first_child (pathBox);
               GtkEntryBuffer *buffer = gtk_entry_get_buffer (GTK_ENTRY (entry_box));
-              printf ("%s\n", text);
-              fflush (stdout);
               gssize len = (gssize) strlen (text);
               gtk_entry_buffer_set_text (buffer, text, len);
             }
@@ -110,7 +106,7 @@ static void show_paths_app_section(GtkBuilder * builder) {
 
   GArray *items = GetPaths ();
 
-  struct ExistingPathEntries *existingPathEntries = g_malloc0 (sizeof (struct ExistingPathEntries)); //TODO : check why we need to use m_alloc here and not with aliases
+  struct ExistingPathEntries *existingPathEntries = g_malloc0 (sizeof (struct ExistingPathEntries));
 
   existingPathEntries->parentElement = elem_boxes;
   existingPathEntries->paths = items;

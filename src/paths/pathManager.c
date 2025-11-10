@@ -22,11 +22,7 @@ checkBashRc (void)
           containsCode = false;
         }
     }
-  if (containsCode)
-    {
-      printf ("Contains the code");
-    }
-  else
+  if (!containsCode)
     {
       const char *home = g_get_home_dir ();
       char *path = g_strdup_printf ("%s/.bashrc", home);
@@ -50,8 +46,6 @@ checkBashRc (void)
       g_free(path);
       g_object_unref (file);
       g_object_unref (ostream);
-      //TO DO : test this in a virtual machine
-
     }
   g_string_free (bashRCContent, TRUE);
 }
@@ -88,7 +82,7 @@ GetPaths (void)
 
   g_free (path);
   GString *fileContent = readFile ("/.bashrc.d/dev-louiscouture-path.sh");
-  printf ("%s", fileContent->str);
+
 
   GArray *paths = g_array_new (FALSE, FALSE, sizeof (gpointer));
 
