@@ -1,11 +1,10 @@
 {
     "id" : "dev.louiscouture.path",
     "runtime" : "org.gnome.Platform",
-    "runtime-version" : "48",
+    "runtime-version" : "49",
     "sdk" : "org.gnome.Sdk",
     "command" : "paths3",
     "finish-args" : [
-        "--share=network",
         "--share=ipc",
         "--socket=fallback-x11",
         "--device=dri",
@@ -31,7 +30,7 @@
             "sources" : [
                 {
                     "type" : "git",
-                    "url" : "file:///home/louiscouture/Projects"
+                    "url" : "file:///home/louiscouture/Projects/paths3"
                 }
             ]
         }
