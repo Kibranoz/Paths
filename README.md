@@ -81,8 +81,9 @@ unset rc
 
 ## Roadmap
 
+- custom flatpak repo (the flathub maintainers think 'This doesn't fit flathub use case or whatever')
 
-- Publish this to flathub store
+- Support zhrc and mybe fish
 
 
 - Add translations
