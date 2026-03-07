@@ -106,7 +106,7 @@ Contributions are welcome, such as
 
 
 
-- Potential fixes : I am new to C and gtk programming, if I made things in a way that weren't best practises, I probably did not know. If there are bugs that I did not catch, it goes without saying that you can submit a PR to fix this.
+- Potential fixes
 
 
 - New logo : The current one is fine, but it's also AI generated with some fixes on my end. If you want to make a real logo for this app, feel free. I would still prefer to keep the original idea behind the logo which is a road to represent a path, but other concepts are welcome if I like it.
